@@ -1,0 +1,232 @@
+########################################################################
+# SNCTRL  GNUmakefile.in
+########################################################################
+
+#-----------------------------------------------------------------------
+
+# Available modules:
+#    src  examples  mex
+modules = @modules@
+modsrc  = $(modules:%=$(srcdir)/%)
+
+
+#-----------------------------------------------------------------------
+# Compilers and linker flags
+#-----------------------------------------------------------------------
+FC           = @FC@
+FCFLAGS      = @FCFLAGS@
+FCLIBS       = @FCLIBS@
+
+CC           = @CC@
+CFLAGS       = @CFLAGS@
+
+CXX          = @CXX@
+CXXFLAGS     = @CXXFLAGS@
+
+LDFLAGS      = @LDFLAGS@
+
+LTFLAGS      = --quiet
+
+matlab       = @matlab@
+MATLABDIR    = @MATLABDIR@
+MEX          = @MEX@
+MEXFLAGS     = @MEXFLAGS@
+
+#-----------------------------------------------------------------------
+# Location of external libraries
+#-----------------------------------------------------------------------
+
+blas         = @blas@
+ifeq ($(blas),yes)
+  blasLIB    = @BLAS_LIBS@
+endif
+
+shared       = @enable_shared@
+static       = @enable_static@
+
+#-----------------------------------------------------------------------
+
+SHELL        = @SHELL@
+LIBTOOL      = @LIBTOOL@
+LIBTOOL_DEPS = @LIBTOOL_DEPS@
+INSTALL      = @INSTALL@
+
+prefix       = @prefix@
+exec_prefix  = @exec_prefix@
+datarootdir  = @datarootdir@
+datadir      = @datadir@
+bindir       = @bindir@
+libdir       = @libdir@
+incdir       = @includedir@
+mandir       = @mandir@
+srcdir       = @srcdir@
+
+top_srcdir   = @top_srcdir@
+top_builddir = @top_builddir@
+
+#-----------------------------------------------------------------------
+
+LIBDIR       = $(top_builddir)/lib
+INCDIR       = $(top_builddir)/include
+MODDIR       = $(top_builddir)/mod
+BINDIR       = $(top_builddir)/bin
+
+SRCDIR       = $(top_srcdir)/src
+OBJDIR       = $(top_builddir)/src
+
+EX_SRCDIR    = $(top_srcdir)/examples
+EX_OBJDIR    = $(top_builddir)/examples
+
+MATDIR       = $(top_srcdir)/matlab
+
+MEX_SRCDIR   = $(top_srcdir)/mex
+MEX_OBJDIR   = $(top_builddir)/mex
+
+#-----------------------------------------------------------------------
+
+MODLOC       = @FC_MODOUT@$(MODDIR)
+MODINC       = @FC_MODINC@$(MODDIR)
+MODFLAGS     = $(MODLOC) $(MODINC)
+
+#-----------------------------------------------------------------------
+
+COMPILE_F    = $(LIBTOOL) --mode=compile --tag=FC  $(LTFLAGS) $(FC)
+LINK_F       = $(LIBTOOL) --mode=link    --tag=FC  $(LTFLAGS) $(FC)
+
+COMPILE_C    = $(LIBTOOL) --mode=compile --tag=CC  $(LTFLAGS) $(CC)
+LINK_C       = $(LIBTOOL) --mode=link    --tag=CC  $(LTFLAGS) $(CC)
+
+COMPILE_CXX  = $(LIBTOOL) --mode=compile --tag=CXX $(LTFLAGS) $(CXX)
+LINK_CXX     = $(LIBTOOL) --mode=link    --tag=CXX $(LTFLAGS) $(CXX)
+
+LINK_MEX     = $(LIBTOOL) --mode=link    --tag=CC  $(LTFLAGS) $(MEX)
+
+CLEAN        = $(LIBTOOL) --mode=clean     $(LTFLAGS)
+INSTALL_LIB  = $(LIBTOOL) --mode=install   $(LTFLAGS) $(INSTALL)
+FINISH       = $(LIBTOOL) --mode=finish    $(LTFLAGS)
+UNINSTALL    = $(LIBTOOL) --mode=uninstall $(LTFLAGS)
+
+#-----------------------------------------------------------------------
+# Library names
+SNOPT_LIB      = -L@SNOPT_LIB@ -lsnopt7
+
+VERSION        = @VERSION@
+SNCTRLLIBS     = snctrl$(VERSION)
+
+SNCTRLLIBS_LA  = $(LIBDIR)/lib$(SNCTRLLIBS).la
+SNCTRLLIBS_INS = $(libdir)/lib$(SNCTRLLIBS).la
+
+SNCTRL_LIBS    = -L$(LIBDIR) -l$(SNCTRLLIBS) $(LDFLAGS) $(blasLIB)
+
+#-----------------------------------------------------------------------
+
+all: lib_snctrl
+
+snctrl: lib_snctrl
+matlab:
+
+#-----------------------------------------------------------------------
+
+install: install_snctrl
+uninstall: uninstall_snctrl
+
+install_snctrl: lib_snctrl $(libdir)
+	$(INSTALL_LIB) $(SNCTRLLIBS_LA) $(libdir)
+	$(FINISH) $(libdir)
+
+uninstall_snctrl:
+	$(UNINSTALL) rm -f $(SNCTRLLIBS_INS)
+	$(CLEAN) rm -f $(SNCTRLLIBS_LA)
+
+#-----------------------------------------------------------------------
+include $(patsubst %,%/Submakefile,$(modsrc))
+#-----------------------------------------------------------------------
+
+lib_snctrl: src_snctrl $(LIBDIR) $(SNCTRLLIBS_LA)
+
+$(SNCTRLLIBS_LA): $(CTSRC_LO)
+	$(LINK_F) $(FCFLAGS) -o $@ $^ -rpath $(libdir)
+
+#-----------------------------------------------------------------------
+
+clean:
+veryclean:
+
+distclean: veryclean
+	-rm -rf $(LIBDIR) $(BINDIR) $(INCDIR) $(MODDIR)
+	-rm -f config.cache config.log config.status GNUmakefile libtool
+
+libtool: $(LIBTOOL_DEPS)
+	$(SHELL) ./config.status libtool
+
+config.status:  $(top_srcdir)/configure
+	./config.status --recheck
+
+GNUmakefile: $(top_srcdir)/GNUmakefile.in $(top_builddir)/config.status
+	./config.status
+
+$(top_builddir):
+	if [ ! -d $(top_builddir) ]; then mkdir $@; fi
+
+$(incdir):
+	if [ ! -d $(incdir) ]; then mkdir -p $@; fi
+
+$(libdir):
+	echo $(libdir)
+	if [ ! -d $(libdir) ]; then mkdir -p $@; fi
+
+$(LIBDIR): $(top_builddir)
+	if [ ! -d $(LIBDIR) ]; then mkdir $@; fi
+
+mod_dir: $(top_builddir)
+	if [ ! -d $(MODDIR) ]; then mkdir $(MODDIR); fi
+
+bin_dir: $(top_builddir)
+	if [ ! -d $(BINDIR) ]; then mkdir $(BINDIR); fi
+
+$(INCDIR): $(top_builddir)
+	if [ ! -d $(INCDIR) ]; then mkdir $@; fi
+
+.SUFFIXES:
+
+check: examples
+	@echo "Checking the installation.  This may take a while..."
+ifneq ($(EX_SRCDIR),$(EX_OBJDIR))
+	@-cp ${EX_SRCDIR}/check ${EX_OBJDIR}/;
+endif
+	@cd ${EX_OBJDIR}; ./check > check.log;
+#	@cd ${EX_OBJDIR}; rm -f ./check.log; $(foreach ex,$(_EXE),./$(ex) >> ./check.log;)
+ifneq ($(EX_SRCDIR),$(EX_OBJDIR))
+	@-rm ${EX_OBJDIR}/check;
+endif
+	@grep EXIT ${EX_SRCDIR}/check.log0 > /tmp/EXITs0.txt
+	@grep EXIT ${EX_OBJDIR}/check.log  > /tmp/EXITs.txt
+	@echo " "
+	@echo "Comparing expected EXIT messages  (from examples/check.log0)"
+	@echo "with those from this installation (from examples/check.log )"
+	@echo "The differences are listed in /tmp/EXITdiffs.txt"
+	@echo "      0 /tmp/EXITdiffs.txt    is good news (no differences)"
+	@echo " "
+	@diff  /tmp/EXITs0.txt /tmp/EXITs.txt > /tmp/EXITdiffs.txt
+	@wc -l /tmp/EXITdiffs.txt
+
+
+help:
+	@echo " "
+	@echo "Options for makefile"
+	@echo "  all:  build everything enabled"
+	@echo "  snctrl: build SNCTRL Fortran library"
+	@echo "  examples: compile the examples"
+	@echo " "
+	@echo "  check: "
+	@echo " "
+	@echo "  clean: "
+	@echo "  veryclean: "
+	@echo "  distclean: "
+	@echo " "
+	@echo "  install: "
+	@echo "  uninstall: "
+
+
+.PHONY: all matlab examples snctrl lib_snctrl \
+        install uninstall check clean veryclean distclean help

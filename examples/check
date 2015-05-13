@@ -1,0 +1,26 @@
+#!/bin/sh
+
+  ./rocketA
+  ./rocketD
+  ./rocketS
+  ./vanderpolA
+  ./vanderpolD
+  ./vanderpolS
+  ./vtbrachistochroneA
+  ./vtbrachistochroneD
+  ./vtbrachistochroneS
+  ./brachistochroneS
+  ./catmixA
+  ./catmixD
+  ./catmixS
+  ./diplantA
+  ./diplantD
+  ./diplantS
+  ./pendulumA
+  ./pendulumD
+  ./pendulumS
+  ./brachistochroneA
+  ./brachistochroneD
+  ./BreakwellA
+  ./BreakwellD
+  ./BreakwellS

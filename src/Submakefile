@@ -1,0 +1,40 @@
+#-----------------------------------------------------------------------
+# Submakefile :: snctrl :: src
+#-----------------------------------------------------------------------
+
+# Modules have to compiled in this order.
+CTSRC     = precision ct02data  \
+            ct15usr   ct16refn  ct20eval  ct28derv  \
+            ct30ker   control   snctrl
+
+CTSRC_LO  = $(CTSRC:%=$(OBJDIR)/%.lo)
+
+#-----------------------------------------------------------------------
+
+src_snctrl: mod_dir obj_dir $(CTSRC_LO)
+clean: clean_snctrl
+veryclean: clean_snctrl
+distclean: clean_snctrl
+
+#-----------------------------------------------------------------------
+
+obj_dir: $(top_builddir)
+	if [ ! -d $(OBJDIR) ]; then mkdir $(OBJDIR); fi
+
+$(OBJDIR)/%.lo: $(SRCDIR)/%.f90
+	$(COMPILE_F) -c $(FCFLAGS) $(MODFLAGS) $< -o $@
+
+$(OBJDIR)/%.lo: $(SRCDIR)/%.f
+	$(COMPILE_F) $(FCFLAGS) -c $< -o $@
+
+#-----------------------------------------------------------------------
+
+clean_snctrl:
+	$(CLEAN) rm -f $(OBJDIR)/*.lo
+
+veryclean_snctrl: clean_snctrl
+	$(CLEAN) rm -f $(MODDIR)/*.mod
+
+#-----------------------------------------------------------------------
+
+.PHONY: src_snctrl clean_snctrl veryclean_snctrl

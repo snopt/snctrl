@@ -1,0 +1,57 @@
+#-----------------------------------------------------------------------
+# Submakefile :: snctrl :: examples
+#-----------------------------------------------------------------------
+
+_EX  = brachistochrone  Breakwell  catmix     diplant  \
+       pendulum         rocket     vanderpol  vtbrachistochrone
+
+_EXA = $(_EX:%=%A)
+_EXD = $(_EX:%=%D)
+_EXS = $(_EX:%=%S)
+
+
+EXAMPLES_EXA = $(_EXA:%=$(EX_OBJDIR)/%)
+EXAMPLES_EXD = $(_EXD:%=$(EX_OBJDIR)/%)
+EXAMPLES_EXS = $(_EXS:%=$(EX_OBJDIR)/%)
+
+#-----------------------------------------------------------------------
+
+clean: clean_examples
+veryclean: veryclean_examples
+distclean: veryclean_examples
+
+#-----------------------------------------------------------------------
+
+examples: lib_snctrl install example_dir $(EXAMPLES_EXA) $(EXAMPLES_EXD) $(EXAMPLES_EXS)
+
+A: lib_snctrl install example_dir $(EXAMPLES_EXA)
+
+D: lib_snctrl install example_dir $(EXAMPLES_EXD)
+
+S: lib_snctrl install example_dir $(EXAMPLES_EXS)
+
+#-----------------------------------------------------------------------
+
+example_dir: $(top_builddir)
+	if [ ! -d $(EX_OBJDIR) ]; then mkdir $(EX_OBJDIR); fi
+
+$(EX_OBJDIR)/%: $(EX_OBJDIR)/%.lo
+	$(LINK_F) $(FCFLAGS) $^ -o $@  $(SNOPT_LIB) $(SNCTRL_LIBS)
+
+$(EX_OBJDIR)/%.lo : $(EX_SRCDIR)/%.f90
+	$(COMPILE_F) $(FCFLAGS) $(MODFLAGS) -c $< -o $@
+
+#-----------------------------------------------------------------------
+
+clean_examples:
+	$(CLEAN) rm -f $(EX_OBJDIR)/*.lo
+
+veryclean_examples: clean_examples
+	$(CLEAN) rm -f $(EXAMPLES_EXA) $(EXAMPLES_EXD) $(EXAMPLES_EXS)
+	$(CLEAN) rm -f $(EX_OBJDIR)/*.out
+
+#-----------------------------------------------------------------------
+
+.PRECIOUS: $(EX_OBJDIR)/%.lo
+
+.PHONY: examples clean_examples veryclean_examples
