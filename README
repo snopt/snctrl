@@ -1,6 +1,12 @@
-SNCTRL is an optimal control interface for the nonlinear optimization package SNOPT.
+*-------------------------------------------------------------------------------
+Elizabeth Wong                                                       12 May 2015
+snctrl/README
 
-SNOPT is required to use SNCTRL, but is not included here.
+This directory contains the optimal control interface SNCTRL.
+
+
+The user needs to configure and compile the control package since it isn't a
+part of the installation of SNOPT.
 
 
 Configure and install SNCTRL:
